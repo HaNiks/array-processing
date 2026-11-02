@@ -1,12 +1,13 @@
 package by.han.arrays.application;
 
 import by.han.arrays.comparator.ByFirstElementComparator;
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.entity.IntArrayEntity;
+import by.han.arrays.domain.warehouse.ArrayStatistics;
+import by.han.arrays.domain.warehouse.Warehouse;
 import by.han.arrays.exception.InvalidArrayException;
 import by.han.arrays.parser.IntArrayParser;
 import by.han.arrays.reader.ArrayFileReader;
 import by.han.arrays.service.ArrayService;
-import by.han.arrays.service.StatisticService;
 import by.han.arrays.service.impl.ArrayInsertSortService;
 import by.han.arrays.service.impl.ArrayQuickSortService;
 import by.han.arrays.specification.enums.ComparisonArrayType;
@@ -22,19 +23,17 @@ public final class ArrayApplication {
 
     private final ArrayFileReader fileReader;
     private final IntArrayParser parser;
-    private final StatisticService statisticService;
     private final ArrayQuickSortService quickSortService;
     private final ArrayInsertSortService insertionSortService;
     private final ArrayService arrayService;
+    private final Warehouse warehouse = Warehouse.getInstance();
 
     public ArrayApplication(
             ArrayFileReader fileReader, IntArrayParser parser,
-            StatisticService statisticService,
             ArrayQuickSortService quickSortService,
             ArrayInsertSortService insertionSortService, ArrayService arrayService) {
         this.fileReader = fileReader;
         this.parser = parser;
-        this.statisticService = statisticService;
         this.quickSortService = quickSortService;
         this.insertionSortService = insertionSortService;
         this.arrayService = arrayService;
@@ -46,6 +45,8 @@ public final class ArrayApplication {
         }
 
         logResults(arrayService);
+
+        testObserver();
     }
 
     private void processLine(String line) {
@@ -64,11 +65,12 @@ public final class ArrayApplication {
 
 
     private void logResults(IntArrayEntity array) {
+        ArrayStatistics stats = warehouse.get(array.getId());
         LOGGER.info("Input array: {}", Arrays.toString(array.getValues()));
-        LOGGER.info("Minimum: {}", statisticService.findMin(array).orElseThrow());
-        LOGGER.info("Maximum: {}", statisticService.findMax(array).orElseThrow());
-        LOGGER.info("Sum: {}", statisticService.calculateSum(array).orElseThrow());
-        LOGGER.info("Average: {}", statisticService.calculateAverage(array).orElseThrow());
+        LOGGER.info("Minimum: {}", stats.min());
+        LOGGER.info("Maximum: {}", stats.max());
+        LOGGER.info("Sum: {}", stats.sum());
+        LOGGER.info("Average: {}", stats.avg());
         LOGGER.info("Insertion sort: {}", Arrays.toString(insertionSortService.sort(array)));
         LOGGER.info("Quick sort: {}", Arrays.toString(quickSortService.sort(array)));
     }
@@ -79,7 +81,7 @@ public final class ArrayApplication {
         LOGGER.info("Find by name 'Array #0': {}", service.findByName("Array #0"));
         LOGGER.info("Sum > 10: {}", service.findBySum(ComparisonArrayType.GREATER, 10));
         LOGGER.info("Sum < 10: {}", service.findBySum(ComparisonArrayType.LESS, 10));
-        LOGGER.info("Sum == 10: {}", service.findBySum(ComparisonArrayType.EQUAL, 6));
+        LOGGER.info("Sum == 6: {}", service.findBySum(ComparisonArrayType.EQUAL, 6));
         LOGGER.info("Average > 1: {}", service.findByAverage(ComparisonArrayType.GREATER, 1));
         LOGGER.info("Max > 5: {}", service.findByMax(ComparisonArrayType.GREATER, 40));
         LOGGER.info("Min < 3: {}", service.findByMin(ComparisonArrayType.LESS, 3));
@@ -92,5 +94,20 @@ public final class ArrayApplication {
         LOGGER.info("Deleted id=1: {}", service.deleteById(1L));
         LOGGER.info("All after delete: {}", service.findAll());
         LOGGER.info("Deleted all: {}", service.deleteAll());
+    }
+
+    private void testObserver() {
+        Warehouse warehouse = Warehouse.getInstance();
+
+        arrayService.findById(0L).ifPresentOrElse(entity -> {
+            LOGGER.info("1. Stats BEFORE change: {}", warehouse.get(entity.getId()));
+
+            LOGGER.info("2. Changing element [0] to 999...");
+            entity.setValue(0, 999);
+
+            LOGGER.info("3. Stats AFTER change:  {}", warehouse.get(entity.getId()));
+
+            LOGGER.info("4. Find by sum > 1000: {}", arrayService.findBySum(ComparisonArrayType.GREATER, 1000));
+        }, () -> LOGGER.warn("Entity with id=0 not found"));
     }
 }

@@ -1,10 +1,11 @@
 package by.han.arrays.specification.impl;
 
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.entity.IntArrayEntity;
+import by.han.arrays.domain.warehouse.ArrayStatistics;
+import by.han.arrays.domain.warehouse.Warehouse;
 import by.han.arrays.specification.Specification;
 import by.han.arrays.specification.enums.AggregateArrayType;
 import by.han.arrays.specification.enums.ComparisonArrayType;
-import by.han.arrays.util.ArrayMath;
 
 public class AggregateSpecification implements Specification<IntArrayEntity> {
 
@@ -31,12 +32,18 @@ public class AggregateSpecification implements Specification<IntArrayEntity> {
     }
 
     private double extract(IntArrayEntity e) {
+        ArrayStatistics stats = Warehouse.getInstance().get(e.getId());
+
+        if (stats == null) {
+            return 0.0;
+        }
+
         return switch (aggregate) {
-            case SUM -> ArrayMath.sum(e);
-            case AVERAGE -> ArrayMath.average(e);
-            case MAX -> ArrayMath.max(e);
-            case MIN -> ArrayMath.min(e);
-            case COUNT -> ArrayMath.count(e);
+            case SUM -> stats.sum();
+            case AVERAGE -> stats.avg();
+            case MAX -> stats.max();
+            case MIN -> stats.min();
+            case COUNT -> e.size();
         };
     }
 }

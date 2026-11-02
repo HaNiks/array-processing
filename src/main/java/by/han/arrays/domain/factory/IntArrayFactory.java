@@ -1,5 +1,6 @@
-package by.han.arrays.domain;
+package by.han.arrays.domain.factory;
 
+import by.han.arrays.domain.entity.IntArrayEntity;
 import by.han.arrays.exception.InvalidArrayException;
 
 public final class IntArrayFactory implements ArrayFactory {

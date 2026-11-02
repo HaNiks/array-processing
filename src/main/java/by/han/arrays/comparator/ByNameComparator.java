@@ -1,6 +1,6 @@
 package by.han.arrays.comparator;
 
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.entity.IntArrayEntity;
 
 import java.util.Comparator;
 

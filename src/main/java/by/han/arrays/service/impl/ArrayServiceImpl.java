@@ -4,10 +4,11 @@ import by.han.arrays.comparator.ByCountElementsComparator;
 import by.han.arrays.comparator.ByFirstElementComparator;
 import by.han.arrays.comparator.ByIdComparator;
 import by.han.arrays.comparator.ByNameComparator;
-import by.han.arrays.domain.ArrayFactory;
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.factory.ArrayFactory;
+import by.han.arrays.domain.entity.IntArrayEntity;
 import by.han.arrays.exception.InvalidArrayException;
 import by.han.arrays.repository.ArrayRepository;
+import by.han.arrays.repository.InMemoryArrayRepository;
 import by.han.arrays.service.ArrayService;
 import by.han.arrays.specification.Specification;
 import by.han.arrays.specification.enums.AggregateArrayType;
@@ -25,8 +26,8 @@ public class ArrayServiceImpl implements ArrayService {
     private final ArrayRepository repository;
     private final ArrayFactory factory;
 
-    public ArrayServiceImpl(ArrayRepository repository, ArrayFactory factory) {
-        this.repository = Objects.requireNonNull(repository, "repository must not be null");
+    public ArrayServiceImpl(ArrayFactory factory) {
+        this.repository = InMemoryArrayRepository.getInstance();
         this.factory = Objects.requireNonNull(factory, "factory must not be null");
     }
 

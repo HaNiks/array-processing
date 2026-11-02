@@ -1,15 +1,12 @@
 package by.han.arrays.application;
 
-import by.han.arrays.domain.ArrayFactory;
-import by.han.arrays.domain.IntArrayFactory;
+import by.han.arrays.domain.factory.ArrayFactory;
+import by.han.arrays.domain.factory.IntArrayFactory;
 import by.han.arrays.parser.impl.IntArrayParserImpl;
 import by.han.arrays.reader.impl.ArrayFileReaderImpl;
-import by.han.arrays.repository.ArrayRepository;
-import by.han.arrays.repository.InMemoryArrayRepository;
 import by.han.arrays.service.impl.ArrayInsertSortService;
 import by.han.arrays.service.impl.ArrayQuickSortService;
 import by.han.arrays.service.impl.ArrayServiceImpl;
-import by.han.arrays.service.impl.ArrayStatisticService;
 import by.han.arrays.validation.impl.IntArrayValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,16 +19,14 @@ public final class ApplicationLauncher {
 
     public void launch() {
         IntArrayValidator validator = new IntArrayValidator();
-        ArrayRepository arrayRepository = new InMemoryArrayRepository();
         ArrayFactory arrayFactory = new IntArrayFactory();
 
         ArrayApplication application = new ArrayApplication(
                 new ArrayFileReaderImpl(),
                 new IntArrayParserImpl(validator),
-                new ArrayStatisticService(),
                 new ArrayQuickSortService(),
                 new ArrayInsertSortService(),
-                new ArrayServiceImpl(arrayRepository, arrayFactory));
+                new ArrayServiceImpl(arrayFactory));
         try {
             application.run(Path.of("data", "arrays.txt"));
         } catch (IOException exception) {

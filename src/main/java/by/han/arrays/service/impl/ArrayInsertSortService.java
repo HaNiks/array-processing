@@ -1,6 +1,6 @@
 package by.han.arrays.service.impl;
 
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.entity.IntArrayEntity;
 import by.han.arrays.service.SortService;
 
 import java.util.Objects;

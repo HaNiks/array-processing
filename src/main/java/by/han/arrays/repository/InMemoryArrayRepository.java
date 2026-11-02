@@ -1,14 +1,29 @@
 package by.han.arrays.repository;
 
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.entity.IntArrayEntity;
+import by.han.arrays.domain.warehouse.Warehouse;
 import by.han.arrays.exception.MemoryArrayException;
+import by.han.arrays.observer.Observer;
 import by.han.arrays.specification.Specification;
 
 import java.util.*;
 
-public final class InMemoryArrayRepository implements ArrayRepository {
+public final class InMemoryArrayRepository implements ArrayRepository, Observer {
 
+    private static InMemoryArrayRepository instance;
     private final Map<Long, IntArrayEntity> storage = new HashMap<>();
+    private final Warehouse warehouse = Warehouse.getInstance();
+
+
+    private InMemoryArrayRepository() {
+    }
+
+    public static InMemoryArrayRepository getInstance() {
+        if (instance == null) {
+            instance = new InMemoryArrayRepository();
+        }
+        return instance;
+    }
 
     @Override
     public void add(IntArrayEntity entity) {
@@ -16,18 +31,30 @@ public final class InMemoryArrayRepository implements ArrayRepository {
         if (storage.putIfAbsent(entity.getId(), entity) != null) {
             throw new MemoryArrayException("Array with id=" + entity.getId() + " already exists");
         }
+        entity.attach(this);
+        warehouse.recompute(entity);
     }
 
     @Override
     public int deleteAll() {
         int countOfDeleted = storage.size();
+        for (IntArrayEntity entity : storage.values()) {
+            entity.detach(this);
+        }
+        warehouse.clear();
         storage.clear();
         return countOfDeleted;
     }
 
     @Override
     public boolean deleteById(long id) {
-        return storage.remove(id) != null;
+        IntArrayEntity removed = storage.remove(id);
+        if (removed != null) {
+            removed.detach(this);
+            warehouse.remove(id);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -54,5 +81,10 @@ public final class InMemoryArrayRepository implements ArrayRepository {
         List<IntArrayEntity> copy = new ArrayList<>(storage.values());
         copy.sort(comparator);
         return copy;
+    }
+
+    @Override
+    public void update(IntArrayEntity entity) {
+        warehouse.recompute(entity);
     }
 }

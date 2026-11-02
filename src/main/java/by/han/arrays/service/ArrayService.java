@@ -1,7 +1,7 @@
 
 package by.han.arrays.service;
 
-import by.han.arrays.domain.IntArrayEntity;
+import by.han.arrays.domain.entity.IntArrayEntity;
 import by.han.arrays.specification.enums.ComparisonArrayType;
 
 import java.util.Comparator;
